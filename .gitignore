@@ -1,0 +1,7 @@
+.env
+venv_*
+key*
+*.zip
+z_*
+data/*
+output/*
