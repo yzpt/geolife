@@ -18,17 +18,32 @@ def plot_timeline(
     fig = go.Figure()
 
     # Add speed scatter plot - Motion Type
+    # fig.add_trace(
+    #     go.Scatter(
+    #         x=df['datetime'],
+    #         y=df[y_data],
+    #         mode=mode,
+    #         marker=marker,
+    #         name=y_data,
+    #         hoverinfo='text',
+    #         hovertext=df.columns,
+    #         showlegend=True,
+    #         visible = True,
+    #     )
+    # )
+    
     fig.add_trace(
         go.Scatter(
             x=df['datetime'],
             y=df[y_data],
             mode=mode,
             marker=marker,
+            line=dict(color=df['label'].map({'walk': 'blue', 'bike': 'green', 'bus': 'red', 'car': 'orange', 'train': 'purple', 'subway': 'black'})),
             name=y_data,
             hoverinfo='text',
             hovertext=df.columns,
             showlegend=True,
-            visible = True,
+            visible=True,
         )
     )
     

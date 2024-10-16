@@ -7,8 +7,33 @@ from geopy.distance import geodesic
 from src.models.record import Record
 from src.utils.parsers import RecordParser
 
+
 @dataclass
 class Trajectory:
+    """
+    Trajectory class represents a sequence of geographical records for a specific user.
+    Attributes:
+        id (str): Unique identifier for the trajectory.
+        user_id (str): Identifier for the user associated with the trajectory.
+        records (List[Record]): List of Record objects representing the trajectory.
+    Properties:
+        count (int): Number of records in the trajectory.
+        start_datetime (datetime): The earliest datetime in the trajectory records.
+        end_datetime (datetime): The latest datetime in the trajectory records.
+        duration (datetime): The duration of the trajectory (end_datetime - start_datetime).
+        centroid (Dict): The centroid of the trajectory as the average latitude and longitude.
+        df (pd.DataFrame): DataFrame with the trajectory records, time differences, distance, and speed.
+        features (Dict): Dictionary with the trajectory features.
+    Methods:
+        from_file(cls, file_path: str, user_id: str, id: str, parser: RecordParser) -> 'Trajectory':
+            Create a Trajectory object from file using a specific parser.
+        _calculate_time_diffs(self, df: pd.DataFrame) -> List[float]:
+            Calculate the time difference in seconds between consecutive records.
+        _calculate_distances(self, df: pd.DataFrame) -> List[float]:
+            Calculate the distance in meters between consecutive records using geopy.
+        _calculate_speeds(self, df: pd.DataFrame) -> List[float]:
+            Calculate the speed in meters per second between consecutive records.
+    """
     id: str
     user_id: str
     records: List[Record]
@@ -116,3 +141,4 @@ class Trajectory:
             'duration': self.duration,
             'centroid': self.centroid,
         }
+        
