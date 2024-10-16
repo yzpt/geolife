@@ -5,3 +5,7 @@ key*
 z_*
 data/*
 output/*
+
+__pycache__/
+
+todo.md
