@@ -11,29 +11,36 @@ from src.utils.parsers import RecordParser
 @dataclass
 class Trajectory:
     """
-    Trajectory class represents a sequence of geographical records for a specific user.
+    A class to represent a trajectory consisting of multiple records.
+
     Attributes:
-        trajectory_id (str): Unique identifier for the trajectory.
-        user_id (str): Identifier for the user associated with the trajectory.
-        records (List[Record]): List of Record objects representing the trajectory.
+        trajectory_id (str): The unique identifier for the trajectory.
+        user_id (str): The unique identifier for the user.
+        records (List[Record]): A list of Record objects representing the trajectory.
+        df (pd.DataFrame): A DataFrame containing the trajectory records and computed features.
+
     Properties:
-        count (int): Number of records in the trajectory.
+        count (int): The number of records in the trajectory.
         start_datetime (datetime): The earliest datetime in the trajectory records.
         end_datetime (datetime): The latest datetime in the trajectory records.
         duration (datetime): The duration of the trajectory (end_datetime - start_datetime).
         centroid (Dict): The centroid of the trajectory as the average latitude and longitude.
-        df (pd.DataFrame): DataFrame with the trajectory records, time differences, distance, and speed.
-        features (Dict): Dictionary with the trajectory features.
+
     Methods:
         from_file(cls, file_path: str, user_id: str, trajectory_id: str, parser: RecordParser) -> 'Trajectory':
-            Create a Trajectory object from file using a specific parser.
-        _calculate_time_diffs(self, df: pd.DataFrame) -> List[float]:
+            Create a Trajectory object from a file using a specific parser.
+        compute_dataframe():
+            Compute the DataFrame with the trajectory records, time differences, distance, and speed.
+        _calculate_time_diffs(df: pd.DataFrame) -> List[float]:
             Calculate the time difference in seconds between consecutive records.
-        _calculate_distances(self, df: pd.DataFrame) -> List[float]:
+        _calculate_distances(df: pd.DataFrame) -> List[float]:
             Calculate the distance in meters between consecutive records using geopy.
-        _calculate_speeds(self, df: pd.DataFrame) -> List[float]:
+        _calculate_speeds(df: pd.DataFrame) -> List[float]:
             Calculate the speed in meters per second between consecutive records.
+        features -> Dict:
+            Return a dictionary with the trajectory features.
     """
+    
     trajectory_id: str
     user_id: str
     records: List[Record]
