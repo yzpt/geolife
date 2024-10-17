@@ -7,7 +7,12 @@ from src.models.record import Record
 
 class RecordParser(ABC):
     @abstractmethod
-    def parse(self, file_path: str, user_id: str) -> List[Record]:
+    def parse(
+        self, 
+        file_path: str, 
+        user_id: str,
+        trajectory_id: str
+    ) -> List[Record]:
         """
         Parse the file and return a list of Record objects
         """
@@ -17,7 +22,8 @@ class PltRecordParser(RecordParser):
     def parse(
         self, 
         file_path: str, 
-        user_id: str
+        user_id: str,
+        trajectory_id: str
     ) -> List[Record]:
         """
         Parse a .plt file and return a list of Record objects
@@ -29,4 +35,5 @@ class PltRecordParser(RecordParser):
         df['timestamp'] = df['datetime'].apply(lambda x: x.timestamp())
         df.drop(columns=['date', 'time'], inplace=True)
         df['user_id'] = user_id
+        df['trajectory_id'] = trajectory_id
         return [Record(**record) for record in df.to_dict(orient='records')]

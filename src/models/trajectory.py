@@ -13,7 +13,7 @@ class Trajectory:
     """
     Trajectory class represents a sequence of geographical records for a specific user.
     Attributes:
-        id (str): Unique identifier for the trajectory.
+        trajectory_id (str): Unique identifier for the trajectory.
         user_id (str): Identifier for the user associated with the trajectory.
         records (List[Record]): List of Record objects representing the trajectory.
     Properties:
@@ -25,7 +25,7 @@ class Trajectory:
         df (pd.DataFrame): DataFrame with the trajectory records, time differences, distance, and speed.
         features (Dict): Dictionary with the trajectory features.
     Methods:
-        from_file(cls, file_path: str, user_id: str, id: str, parser: RecordParser) -> 'Trajectory':
+        from_file(cls, file_path: str, user_id: str, trajectory_id: str, parser: RecordParser) -> 'Trajectory':
             Create a Trajectory object from file using a specific parser.
         _calculate_time_diffs(self, df: pd.DataFrame) -> List[float]:
             Calculate the time difference in seconds between consecutive records.
@@ -34,9 +34,10 @@ class Trajectory:
         _calculate_speeds(self, df: pd.DataFrame) -> List[float]:
             Calculate the speed in meters per second between consecutive records.
     """
-    id: str
+    trajectory_id: str
     user_id: str
     records: List[Record]
+    df: pd.DataFrame = None
     
     @property
     def count(self) -> int:
@@ -68,29 +69,39 @@ class Trajectory:
         cls: 'Trajectory',
         file_path: str,
         user_id: str,
-        id: str,
+        trajectory_id: str,
         parser: RecordParser
     ) -> 'Trajectory':
         """
         Create a Trajectory object from file using a specific parser
         """
-        records = parser.parse(file_path, user_id)
-        return cls(user_id=user_id, records=records, id=id)
+        records = parser.parse(
+            file_path=file_path, 
+            user_id=user_id,
+            trajectory_id=trajectory_id
+        )
+        trajectory = cls(
+            trajectory_id=trajectory_id, 
+            user_id=user_id, 
+            records=records, 
+            df=pd.DataFrame([record.__dict__ for record in records])
+        )
+        return trajectory
     
-    @property
-    def df(self) -> pd.DataFrame:
+    def compute_dataframe(self):
         """
-        Return a DataFrame with the trajectory records, time differences, distance, and speed
+        Compute the DataFrame with the trajectory records, time differences, distance, and speed
         """
         columns = ['user_id', 'trajectory_id', 'label', 'datetime', 'latitude', 'longitude', 'altitude', 'timestamp']
         df = pd.DataFrame([record.__dict__ for record in self.records])[columns]
         
         # Add time differences, distance, and speed between consecutive records
+        print(f'Computing features for trajectory {self.trajectory_id}...')
         df['time_diff'] = self._calculate_time_diffs(df)
         df['distance'] = self._calculate_distances(df)
         df['speed'] = self._calculate_speeds(df)
         
-        return df
+        self.df = df
     
     def _calculate_time_diffs(self, df: pd.DataFrame) -> List[float]:
         """
@@ -133,7 +144,7 @@ class Trajectory:
         Return a dictionary with the trajectory features
         """
         return {
-            'id': self.id,
+            'trajectory_id': self.trajectory_id,
             'user_id': self.user_id,
             'count': self.count,
             'start_datetime': self.start_datetime,

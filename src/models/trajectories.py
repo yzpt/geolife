@@ -34,8 +34,9 @@ class Trajectories:
         """
         Return a DataFrame with all the records from all the trajectories
         """
-        columns = ['user_id', 'trajectory_id', 'label', 'datetime', 'latitude', 'longitude', 'altitude', 'timestamp']
-        return pd.concat([trajectory.df for trajectory in self.trajectories])[columns]
+        # columns = ['user_id', 'trajectory_id', 'label', 'datetime', 'latitude', 'longitude', 'altitude', 'timestamp']
+        # return pd.concat([trajectory.df for trajectory in self.trajectories])[columns]
+        return pd.concat([trajectory.df for trajectory in self.trajectories])
 
     @property
     def average_centroid(self) -> dict:
@@ -94,9 +95,10 @@ class Trajectories:
             trajectory = Trajectory.from_file(
                             file_path=file, 
                             user_id=user_id, 
-                            id=f'{user_id}_{i}',
+                            trajectory_id=f'{user_id}_{i}',
                             parser=PltRecordParser()
                         )
+            print(f'Loaded trajectory {trajectory.trajectory_id} with {trajectory.count} records')
             trajectories.append(trajectory)
         return trajectories
     
@@ -126,42 +128,71 @@ class Trajectories:
         df_labels['start_datetime'] = pd.to_datetime(df_labels['start_datetime'])
         df_labels['end_datetime'] = pd.to_datetime(df_labels['end_datetime'])
         return df_labels
-
-    def update_labels(self, user_path: str) -> None:
+    
+    def update_labels(
+        self,
+        user_path: str
+    ) -> None:
         """
-        Optimized method to update the labels of the trajectories.
+        Update the Record.labels values & the df with labels for each trajectory
         """
-        try:
-            df_labels = self.extract_labels(user_path)
-            if df_labels.empty:
-                return  # No labels to process
+        df_labels = self.extract_labels(user_path)
+        df_labels.sort_values('start_datetime', inplace=True)
+        if df_labels.empty:
+            return
+        df_records = pd.concat([trajectory.df for trajectory in self.trajectories])
+        df_records.drop(columns=['label'], inplace=True)
+        df_records = pd.merge_asof(
+            df_records.sort_values('datetime'),
+            df_labels,
+            left_on='datetime',
+            right_on='start_datetime',
+            direction='backward',
+            suffixes=('', '_label'),
+            # add only the label column from right DataFrame
+        ).drop(columns=['start_datetime', 'end_datetime'])
+        # update the Record values & the df for each trajectory
+        for trajectory in self.trajectories:
+            trajectory_df = df_records[df_records['trajectory_id'] == trajectory.trajectory_id]
+            trajectory.df = trajectory_df
+            for record, row in zip(trajectory.records, trajectory_df.itertuples()):
+                record.label = row.label
+    
+    # def update_labels(self, user_path: str) -> None:
+    #     """
+    #     Optimized method to update the labels of the trajectories.
+    #     """
+    #     try:
+    #         df_labels = self.extract_labels(user_path)
+    #         if df_labels.empty:
+    #             return  # No labels to process
 
-            # Step 1: Convert all records into a DataFrame for easier manipulation
-            records_df = pd.concat([trajectory.df for trajectory in self.trajectories])
+    #         # Step 1: Convert all records into a DataFrame for easier manipulation
+    #         records_df = pd.concat([trajectory.df for trajectory in self.trajectories])
 
-            # Step 2: Use Pandas' merge_asof to efficiently assign labels
-            df_labels = df_labels.sort_values('start_datetime')
-            records_df = pd.merge_asof(
-                records_df.sort_values('datetime'),
-                df_labels,
-                left_on='datetime',
-                right_on='start_datetime',
-                direction='backward',
-                suffixes=('', '_label')
-            )
+    #         # Step 2: Use Pandas' merge_asof to efficiently assign labels
+    #         df_labels = df_labels.sort_values('start_datetime')
+    #         records_df = pd.merge_asof(
+    #             records_df.sort_values('datetime'),
+    #             df_labels,
+    #             left_on='datetime',
+    #             right_on='start_datetime',
+    #             direction='backward',
+    #             suffixes=('', '_label')
+    #         )
 
-            # Step 3: Update the 'label' column for records within the label time range
-            mask = (records_df['datetime'] >= records_df['start_datetime']) & (records_df['datetime'] <= records_df['end_datetime'])
-            records_df.loc[mask, 'label'] = records_df.loc[mask, 'mode']
+    #         # Step 3: Update the 'label' column for records within the label time range
+    #         mask = (records_df['datetime'] >= records_df['start_datetime']) & (records_df['datetime'] <= records_df['end_datetime'])
+    #         records_df.loc[mask, 'label'] = records_df.loc[mask, 'mode']
 
-            # Step 4: Update trajectory records based on the modified DataFrame
-            for trajectory in self.trajectories:
-                trajectory_df = records_df[records_df['trajectory_id'] == trajectory.id]
-                for record, row in zip(trajectory.records, trajectory_df.itertuples()):
-                    record.label = row.label
+    #         # Step 4: Update trajectory records based on the modified DataFrame
+    #         for trajectory in self.trajectories:
+    #             trajectory_df = records_df[records_df['trajectory_id'] == trajectory.trajectory_id]
+    #             for record, row in zip(trajectory.records, trajectory_df.itertuples()):
+    #                 record.label = row.label
 
-        except Exception as e:
-            print(f'Error updating labels: {e}')
+    #     except Exception as e:
+    #         print(f'Error updating labels: {e}')
 
     # @classmethod
     # def update_trajectory_ids(
@@ -182,6 +213,13 @@ class Trajectories:
         """
         for i, trajectory in enumerate(self.trajectories):
             for record in trajectory.records:
-                record.trajectory_id = f'{trajectory.id}'
+                record.trajectory_id = f'{trajectory.trajectory_id}'
     
-    
+    def compute_trajectories_dataframes(
+        self,
+    ) -> None:
+        """
+        Compute the DataFrame with the trajectory records, time differences, distance, and speed
+        """
+        for trajectory in self.trajectories:
+            trajectory.compute_dataframe()
