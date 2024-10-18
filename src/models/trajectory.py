@@ -56,6 +56,10 @@ class Trajectory:
     records: List[Record]
     gdf: gpd.GeoDataFrame = None
     
+    def __post_init__(self):
+        if self.gdf is None:
+            self.gdf = gpd.GeoDataFrame([record.__dict__ for record in self.records])
+    
     @property
     def count(self) -> int:
         return len(self.records)
@@ -111,12 +115,11 @@ class Trajectory:
         """
         columns = ['user_id', 'trajectory_id', 'label', 'datetime', 'latitude', 'longitude', 'altitude', 'timestamp']
         geometry = gpd.points_from_xy(self.gdf['longitude'], self.gdf['latitude'])
-        self.gdf = gpd.GeoDataFrame(self.gdf, crs='EPSG:4326', geometry=geometry)[columns]
         print(f'Computing GeoDataFrame for trajectory {self.trajectory_id} with {self.count} records')
         self.gdf['time_diff'] = self._calculate_time_diffs(self.gdf)
         self.gdf['distance'] = self._calculate_distances(self.gdf)
         self.gdf['speed'] = self._calculate_speeds(self.gdf)
-        return self.gdf
+
     
     def _calculate_time_diffs(self, gdf: gpd.GeoDataFrame) -> List[float]:
         """
@@ -165,6 +168,6 @@ class Trajectory:
             'start_datetime': self.start_datetime,
             'end_datetime': self.end_datetime,
             'duration': self.duration,
-            'centroid': self.centroid,
+            # 'centroid': self.centroid,
         }
         

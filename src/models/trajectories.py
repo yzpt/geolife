@@ -58,7 +58,7 @@ class Trajectories:
         Return a GeoDataFrame with all the records from all the trajectories
         """
         # columns = ['user_id', 'trajectory_id', 'label', 'datetime', 'latitude', 'longitude', 'altitude', 'timestamp']
-        # return gpd.concat([trajectory.df for trajectory in self.trajectories])[columns]
+        # return gpd.concat([trajectory.gdf for trajectory in self.trajectories])[columns]
         return gpd.GeoDataFrame(pd.concat([trajectory.gdf for trajectory in self.trajectories]))
 
     @property
@@ -75,9 +75,9 @@ class Trajectories:
         """
         Return a GeoDataFrame with the features of all the trajectories
         """
-        df = gpd.GeoDataFrame([trajectory.features for trajectory in self.trajectories])
-        df.sort_values(by='start_datetime', inplace=True)
-        return df
+        gdf = gpd.GeoDataFrame([trajectory.features for trajectory in self.trajectories])
+        gdf.sort_values(by='start_datetime', inplace=True)
+        return gdf
 
     @classmethod
     def from_user(
@@ -128,7 +128,7 @@ class Trajectories:
     def extract_labels(
         self, 
         user_path: str
-    ) -> gpd.GeoDataFrame:
+    ) -> pd.DataFrame:
         """
         Extract the labels from the labels.txt file, return a GeoDataFrame
         """
@@ -136,20 +136,20 @@ class Trajectories:
         if not os.path.exists(labels_file):
             return gpd.GeoDataFrame(columns=['start_datetime', 'end_datetime', 'label'])
 
-        df_labels = gpd.GeoDataFrame(columns=['start_datetime', 'end_datetime', 'label'])
+        df_labels = pd.DataFrame(columns=['start_datetime', 'end_datetime', 'label'])
         with open(labels_file) as f:
             for line in f:
                 if 'Time' in line:
                     continue
                 start_datetime, end_datetime, mode = line.strip().split('\t')
-                df_labels = gpd.concat([df_labels, gpd.GeoDataFrame({
+                df_labels = pd.concat([df_labels, gpd.GeoDataFrame({
                     'start_datetime': [start_datetime],
                     'end_datetime': [end_datetime],
                     'label': [mode]
                 })])
         
-        df_labels['start_datetime'] = gpd.to_datetime(df_labels['start_datetime'])
-        df_labels['end_datetime'] = gpd.to_datetime(df_labels['end_datetime'])
+        df_labels['start_datetime'] = pd.to_datetime(df_labels['start_datetime'])
+        df_labels['end_datetime'] = pd.to_datetime(df_labels['end_datetime'])
         return df_labels
     
     def ugpdate_labels(
@@ -157,15 +157,15 @@ class Trajectories:
         user_path: str
     ) -> None:
         """
-        Ugpdate the Record.labels values & the df with labels for each trajectory
+        Ugpdate the Record.labels values & the gdf with labels for each trajectory
         """
         df_labels = self.extract_labels(user_path)
         df_labels.sort_values('start_datetime', inplace=True)
         if df_labels.empty:
             return
-        df_records = gpd.concat([trajectory.df for trajectory in self.trajectories])
+        df_records = pd.concat([trajectory.gdf for trajectory in self.trajectories])
         df_records.drop(columns=['label'], inplace=True)
-        df_records = gpd.merge_asof(
+        df_records = pd.merge_asof(
             df_records.sort_values('datetime'),
             df_labels,
             left_on='datetime',
@@ -174,11 +174,11 @@ class Trajectories:
             suffixes=('', '_label'),
             # add only the label column from right GeoDataFrame
         ).drop(columns=['start_datetime', 'end_datetime'])
-        # ugpdate the Record values & the df for each trajectory
+        # ugpdate the Record values & the gdf for each trajectory
         for trajectory in self.trajectories:
-            trajectory_df = df_records[df_records['trajectory_id'] == trajectory.trajectory_id]
-            trajectory.df = trajectory_df
-            for record, row in zip(trajectory.records, trajectory_df.itertuples()):
+            trajectory_gdf = df_records[df_records['trajectory_id'] == trajectory.trajectory_id]
+            trajectory.gdf = trajectory_gdf
+            for record, row in zip(trajectory.records, trajectory_gdf.itertuples()):
                 record.label = row.label
     
     def compute_trajectories_geodataframes(
