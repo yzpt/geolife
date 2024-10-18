@@ -18,7 +18,7 @@ def plot_timeline(
         color = colors_list[i]
         fig.add_trace(go.Scatter(
             x=trajectory.gdf['datetime'],
-            y=trajectory.gdf[y_data],
+            y=trajectory.gdf['speed'],
             mode=mode,
             line=dict(
                 width=2,

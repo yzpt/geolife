@@ -26,8 +26,8 @@ def plot_map(
     for i, trajectory in enumerate(trajectories.trajectories):
         color = colors_list[i]
         fig.add_trace(go.Scattermapbox(
-            lat=trajectory.gdf[lat_col],
-            lon=trajectory.gdf[lon_col],
+            lat=trajectory.gdf['latitude'],
+            lon=trajectory.gdf['longitude'],
             mode=mode,
             line=dict(
                 width=2,
@@ -44,8 +44,8 @@ def plot_map(
         mapbox=dict(
             accesstoken=mapbox_token,
             center=dict(
-                lat=trajectory.gdf[lat_col].mean() if center_lat is None else center_lat, 
-                lon=trajectory.gdf[lon_col].mean() if center_lon is None else center_lon
+                lat=trajectory.gdf['latitude'].mean() if center_lat is None else center_lat, 
+                lon=trajectory.gdf['longitude'].mean() if center_lon is None else center_lon
             ),
             zoom=zoom,
             style=mapbox_style,

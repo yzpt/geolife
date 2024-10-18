@@ -14,32 +14,33 @@ def create_layout(
             html.Div(
                 className='left-column',
                 children=[
-                    html.H3('GeoLife Dashboard'),
-                    html.H3('GeoLife Dashboard'),
-                    html.H3('GeoLife Dashboard'),
-                    dcc.Dropdown(
-                        id='user-dropdown',
-                        options=trajectories.user_ids_list,
-                        value=trajectories.user_ids_list[0],
+                    html.Div([
+                        html.H3('GeoLife Dashboard'),
+                        dcc.Dropdown(
+                            id='user-dropdown',
+                            options=trajectories.user_ids_list,
+                            value=trajectories.user_ids_list[0],
+                        ),
+                        dcc.Dropdown(
+                            id='trajectory-dropdown',
+                            options=trajectories.trajectory_ids_list,
+                            value=trajectories.trajectory_ids_list[0],
+                            multi=True,
+                        )],
                     ),
-                    # html.Div(
-                    #     className='table-container',
-                    #     children=[
-                            dash_table.DataTable(
-                                id='trajectories-table',
-                                columns=[{"name": col, "id": col} for col in trajectories.features.columns],
-                                data=trajectories.features.to_dict('records'),
-                                style_cell=dict(color='white', backgroundColor='rgb(50, 50, 50)'),
-                                filter_action='native',
-                                sort_action='native',
-                                style_filter=dict(color='white', backgroundColor='#888888'),
-                                fixed_rows={'headers': True},
-                                style_table={'overflowY': 'auto', 'height': 'auto', 'padding': '10px'},
-                                
-                                
-                            ),
-                        # ]
-                    # )
+                    html.Div(
+                        dash_table.DataTable(
+                            id='trajectories-table',
+                            columns=[{"name": col, "id": col} for col in trajectories.features.columns],
+                            data=trajectories.features.to_dict('records'),
+                            filter_action='native',
+                            sort_action='native',
+                            style_filter=dict(color='white', backgroundColor='#777'),
+                            fixed_rows={'headers': True},
+                            style_table={'overflowY': 'auto', 'height': '300px'},
+                            style_cell=dict(color='white', backgroundColor='rgb(50, 50, 50)'),
+                        ),
+                    )
                 ]
             ),
             # Right column with graphs
