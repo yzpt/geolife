@@ -38,6 +38,7 @@ def plot_map(
                 color=color),
             name=f'Trajectory {i}',
             hoverinfo='text',
+            showlegend=False,
         ))
         
     fig.update_layout(

@@ -29,6 +29,7 @@ def plot_timeline(
                 color=color),
             name=f'Trajectory {i}',
             hoverinfo='text',
+            showlegend=False,
         ))
     fig.update_layout(
         template='plotly_dark',

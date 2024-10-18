@@ -61,8 +61,16 @@ def update_graphs(user_id: str, trajectory_ids: List[str]) -> Tuple[go.Figure, g
     
     
     
-    map_fig = plot_map(trajectories_subset, random_colors_list)
-    timeline_fig = plot_timeline(trajectories_subset, random_colors_list)
+    map_fig = plot_map(
+        trajectories=trajectories_subset, 
+        colors_list=random_colors_list,
+        marker_size=3)
+    
+    timeline_fig = plot_timeline(
+        trajectories=trajectories_subset, 
+        colors_list=random_colors_list,
+    )
+    
     return map_fig, timeline_fig
 
     
