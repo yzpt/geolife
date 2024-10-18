@@ -6,6 +6,7 @@ source venv_geolife/bin/activate
 pip install pandas ipykernel numpy matplotlib seaborn plotly dash geopy geopandas python-dotenv st-dbscan
 pip install nbformat
 
+
 # gitignore
 touch .gitignore
 echo ".env" >> .gitignore

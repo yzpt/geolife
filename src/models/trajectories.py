@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List
+import geopandas as gpd
 import pandas as pd
 import os
 
@@ -9,37 +10,28 @@ from src.utils.parsers import PltRecordParser
 @dataclass
 class Trajectories:
     """
-    A class to represent and manage multiple trajectories.
-    
-    Attributes
-    ----------
-    trajectories : List['Trajectory']
-        A list of Trajectory objects.
-    
-    Properties
-    ----------
-    df : pd.DataFrame
-        Returns a DataFrame with all the records from all the trajectories.
-    average_centroid : dict
-        Returns the average centroid of the trajectories.
-    features : pd.DataFrame
-        Returns a DataFrame with the features of all the trajectories.
-    
-    Methods
-    -------
-    from_user(cls, data_path: str = os.getenv('DATA_PATH'), user_ids: List[str] = None, user_id: str = None) -> 'Trajectories':
-        Creates a Trajectories object from a list of user IDs.
-    load_trajectories(user_path: str, user_id: str) -> List['Trajectory']:
-        Loads trajectories from files in a user's folder.
-    extract_labels(user_path: str) -> pd.DataFrame:
-        Extracts the labels from the labels.txt file and returns a DataFrame.
-    update_labels(user_path: str) -> None:
-        Updates the Record.labels values and the DataFrame with labels for each trajectory.
-    update_trajectory_ids() -> None:
-        Updates the trajectory_id of the records.
-    compute_trajectories_dataframes() -> None:
-        Computes the DataFrame with the trajectory records, time differences, distance, and speed.
+    The `Trajectories` class represents a collection of trajectory data and provides various methods to manipulate and analyze this data.
+    Attributes:
+        trajectories (List['Trajectory']): A list of `Trajectory` objects.
+    Properties:
+        user_ids_list (List[str]): Returns a sorted list of unique user IDs from the trajectories.
+        trajectory_ids_list (List[str]): Returns a sorted list of unique trajectory IDs from the trajectories.
+        gdf (gpd.GeoDataFrame): Returns a GeoDataFrame containing all records from all trajectories.
+        average_centroid (dict): Returns the average centroid (latitude and longitude) of the trajectories.
+        features (gpd.GeoDataFrame): Returns a GeoDataFrame with the features of all the trajectories.
+    Methods:
+        from_user(cls, data_path: str = os.getenv('DATA_PATH'), user_ids: List[str] = None, user_id: str = None) -> 'Trajectories':
+            Creates a `Trajectories` object from a list of user IDs or a single user ID.
+        load_trajectories(user_path: str, user_id: str) -> List['Trajectory']:
+            Loads trajectories from files in a user's folder.
+        extract_labels(user_path: str) -> gpd.GeoDataFrame:
+            Extracts labels from the `labels.txt` file and returns a GeoDataFrame.
+        ugpdate_labels(user_path: str) -> None:
+            Updates the `Record.labels` values and the DataFrame with labels for each trajectory.
+        compute_trajectories_geodataframes() -> None:
+            Computes the GeoDataFrame with the trajectory records, time differences, distance, and speed.
     """
+    
     trajectories: List['Trajectory']
 
     @property
@@ -61,13 +53,13 @@ class Trajectories:
         return trajectory_ids_list
 
     @property
-    def df(self) -> pd.DataFrame:
+    def gdf(self) -> gpd.GeoDataFrame:
         """
-        Return a DataFrame with all the records from all the trajectories
+        Return a GeoDataFrame with all the records from all the trajectories
         """
         # columns = ['user_id', 'trajectory_id', 'label', 'datetime', 'latitude', 'longitude', 'altitude', 'timestamp']
-        # return pd.concat([trajectory.df for trajectory in self.trajectories])[columns]
-        return pd.concat([trajectory.df for trajectory in self.trajectories])
+        # return gpd.concat([trajectory.df for trajectory in self.trajectories])[columns]
+        return gpd.GeoDataFrame(pd.concat([trajectory.gdf for trajectory in self.trajectories]))
 
     @property
     def average_centroid(self) -> dict:
@@ -79,11 +71,11 @@ class Trajectories:
         return {'latitude': latitude, 'longitude': longitude}
     
     @property
-    def features(self) -> pd.DataFrame:
+    def features(self) -> gpd.GeoDataFrame:
         """
-        Return a DataFrame with the features of all the trajectories
+        Return a GeoDataFrame with the features of all the trajectories
         """
-        df = pd.DataFrame([trajectory.features for trajectory in self.trajectories])
+        df = gpd.GeoDataFrame([trajectory.features for trajectory in self.trajectories])
         df.sort_values(by='start_datetime', inplace=True)
         return df
 
@@ -136,64 +128,64 @@ class Trajectories:
     def extract_labels(
         self, 
         user_path: str
-    ) -> pd.DataFrame:
+    ) -> gpd.GeoDataFrame:
         """
-        Extract the labels from the labels.txt file, return a DataFrame
+        Extract the labels from the labels.txt file, return a GeoDataFrame
         """
         labels_file = os.path.join(user_path, 'labels.txt')
         if not os.path.exists(labels_file):
-            return pd.DataFrame(columns=['start_datetime', 'end_datetime', 'label'])
+            return gpd.GeoDataFrame(columns=['start_datetime', 'end_datetime', 'label'])
 
-        df_labels = pd.DataFrame(columns=['start_datetime', 'end_datetime', 'label'])
+        df_labels = gpd.GeoDataFrame(columns=['start_datetime', 'end_datetime', 'label'])
         with open(labels_file) as f:
             for line in f:
                 if 'Time' in line:
                     continue
                 start_datetime, end_datetime, mode = line.strip().split('\t')
-                df_labels = pd.concat([df_labels, pd.DataFrame({
+                df_labels = gpd.concat([df_labels, gpd.GeoDataFrame({
                     'start_datetime': [start_datetime],
                     'end_datetime': [end_datetime],
                     'label': [mode]
                 })])
         
-        df_labels['start_datetime'] = pd.to_datetime(df_labels['start_datetime'])
-        df_labels['end_datetime'] = pd.to_datetime(df_labels['end_datetime'])
+        df_labels['start_datetime'] = gpd.to_datetime(df_labels['start_datetime'])
+        df_labels['end_datetime'] = gpd.to_datetime(df_labels['end_datetime'])
         return df_labels
     
-    def update_labels(
+    def ugpdate_labels(
         self,
         user_path: str
     ) -> None:
         """
-        Update the Record.labels values & the df with labels for each trajectory
+        Ugpdate the Record.labels values & the df with labels for each trajectory
         """
         df_labels = self.extract_labels(user_path)
         df_labels.sort_values('start_datetime', inplace=True)
         if df_labels.empty:
             return
-        df_records = pd.concat([trajectory.df for trajectory in self.trajectories])
+        df_records = gpd.concat([trajectory.df for trajectory in self.trajectories])
         df_records.drop(columns=['label'], inplace=True)
-        df_records = pd.merge_asof(
+        df_records = gpd.merge_asof(
             df_records.sort_values('datetime'),
             df_labels,
             left_on='datetime',
             right_on='start_datetime',
             direction='backward',
             suffixes=('', '_label'),
-            # add only the label column from right DataFrame
+            # add only the label column from right GeoDataFrame
         ).drop(columns=['start_datetime', 'end_datetime'])
-        # update the Record values & the df for each trajectory
+        # ugpdate the Record values & the df for each trajectory
         for trajectory in self.trajectories:
             trajectory_df = df_records[df_records['trajectory_id'] == trajectory.trajectory_id]
             trajectory.df = trajectory_df
             for record, row in zip(trajectory.records, trajectory_df.itertuples()):
                 record.label = row.label
     
-    def compute_trajectories_dataframes(
+    def compute_trajectories_geodataframes(
         self,
     ) -> None:
         """
-        Compute the DataFrame with the trajectory records, time differences, distance, and speed
+        Compute the GeoDataFrame with the trajectory records, time differences, distance, and speed
         """
         for trajectory in self.trajectories:
-            trajectory.compute_dataframe()
+            trajectory.compute_geodataframe()

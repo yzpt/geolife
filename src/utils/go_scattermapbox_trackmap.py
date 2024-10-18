@@ -1,12 +1,18 @@
 import plotly.graph_objects as go
-import pandas as pd
+import geopandas as gpd
 import os
 
+from src.models.trajectories import Trajectories
+
+import random
+random_colors_list = [f'rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, 1)' for i in range(500)]
+
 def plot_map(
-    df: pd.DataFrame,
+    trajectories: Trajectories,
     lat_col: str = "latitude",
     lon_col: str = "longitude",
-    color_col: str = "trajectory_id",
+    colors_list: list = random_colors_list,
+    mode: str = "markers+lines",
     mapbox_token: str = os.getenv("MAPBOX_TOKEN"),
     center_lat: float = None,
     center_lon: float = None,
@@ -14,31 +20,39 @@ def plot_map(
     mapbox_style: str = "dark",
     template: str = "plotly_dark",
     marker_size: int = 10,
+    height: int = 400,
 ):
-    fig = go.Figure() # ======================== make a loop for each trajectory
-    fig.add_trace(
-        go.Scattermapbox(
-            lat=df[lat_col],
-            lon=df[lon_col],
+    fig = go.Figure() 
+    for i, trajectory in enumerate(trajectories.trajectories):
+        color = colors_list[i]
+        fig.add_trace(go.Scattermapbox(
+            lat=trajectory.gdf[lat_col],
+            lon=trajectory.gdf[lon_col],
+            mode=mode,
+            line=dict(
+                width=2,
+                color=color
+            ),
             marker=dict(
                 size=marker_size,
-                color=df[color_col].astype('category').cat.codes,
-            ),
-            mode='markers',
-            # cluster=dict(enabled=True),
-        )
-    )
+                color=color),
+            name=f'Trajectory {i}',
+            hoverinfo='text',
+        ))
+        
     fig.update_layout(
         mapbox=dict(
             accesstoken=mapbox_token,
             center=dict(
-                lat=center_lat if center_lat else df[lat_col].mean(),
-                lon=center_lon if center_lon else df[lon_col].mean()
+                lat=trajectory.gdf[lat_col].mean() if center_lat is None else center_lat, 
+                lon=trajectory.gdf[lon_col].mean() if center_lon is None else center_lon
             ),
             zoom=zoom,
+            style=mapbox_style,
         ),
-        margin=dict(l=0, r=0, t=0, b=0),
-        # mapbox_style="dark",
         template=template,
+        margin=dict(l=0, r=0, t=0, b=0),
+        height=height,
     )
+    
     return fig
