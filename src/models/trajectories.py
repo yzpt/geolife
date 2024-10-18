@@ -43,6 +43,24 @@ class Trajectories:
     trajectories: List['Trajectory']
 
     @property
+    def user_ids_list(self) -> List[str]:
+        """
+        Return the list of user IDs
+        """
+        user_ids_list = list(set([trajectory.user_id for trajectory in self.trajectories]))
+        user_ids_list.sort()
+        return user_ids_list
+    
+    @property
+    def trajectory_ids_list(self) -> List[str]:
+        """
+        Return the list of trajectory IDs
+        """
+        trajectory_ids_list = list(set([trajectory.trajectory_id for trajectory in self.trajectories]))
+        trajectory_ids_list.sort()
+        return trajectory_ids_list
+
+    @property
     def df(self) -> pd.DataFrame:
         """
         Return a DataFrame with all the records from all the trajectories
