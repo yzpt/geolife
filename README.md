@@ -18,3 +18,4 @@ This GPS trajectory dataset was collected in (Microsoft Research Asia) Geolife p
 ![Geolife Image](docs/img/4.png)
 ![Geolife Image](docs/img/5.png)
 ![Geolife Image](docs/img/6.png)
+![Geolife Image](docs/img/7.png)

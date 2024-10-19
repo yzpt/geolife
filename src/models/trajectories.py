@@ -84,7 +84,7 @@ class Trajectories:
     @classmethod
     def from_user(
         cls, 
-        data_path: str = os.getenv('DATA_PATH'),
+        data_path: str,
         user_ids: List[str] = None,
         user_id: str = None
     ) -> 'Trajectories':

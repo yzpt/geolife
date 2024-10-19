@@ -21,9 +21,14 @@ from utils.timeline import plot_timeline
 from layout import create_layout
 
 import pickle
-with open(os.path.join(os.getenv('OUTPUT_PATH'), 'trajectories_001.pkl'), 'rb') as f:
-    trajectories: Trajectories = pickle.load(f)
+# Get OUTPUT_PATH from environment variables with a fallback
+output_path = os.getenv('OUTPUT_PATH', 'data')
+print(f'output_path: {output_path}')
 
+# Open the pickle file
+with open(os.path.join(output_path, 'trajectories_001.pkl'), 'rb') as f:
+    trajectories: Trajectories = pickle.load(f)
+    
 color_scale = px.colors.sample_colorscale(px.colors.cyclical.HSV, [i/len(trajectories.trajectory_ids_list) for i in range(len(trajectories.trajectory_ids_list))])
 # shuffle color_scale
 import random
@@ -110,4 +115,4 @@ def update_graphs(
 
     
 if __name__ == '__main__':
-    app.run_server(debug=True, host='0.0.0.0', port=8050)
+    app.run_server(debug=False, host='0.0.0.0', port=8050)
