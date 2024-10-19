@@ -199,5 +199,5 @@ class Trajectories:
         """
         Filter the trajectories by start_datetime and end_datetime
         """
-        trajectories: Trajectory = [trajectory.filter_by_datetimerange(datetime_range) for trajectory in self.trajectories]
-        return Trajectories(trajectories)
+        self.trajectories = [trajectory.filter_by_datetimerange(datetime_range) for trajectory in self.trajectories]
+        return self

@@ -180,3 +180,5 @@ class Trajectory:
         """
         records = [record for record in self.records if datetime_range[0] <= record.datetime <= datetime_range[1]]
         self.records = records
+        return self
+        

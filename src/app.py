@@ -56,6 +56,7 @@ def update_graphs(
 ) -> Tuple[go.Figure, go.Figure]:
     
     global trajectories
+    global trajectories_subset
     
     if trajectory_ids is None:
         trajectory_ids = []
@@ -64,15 +65,18 @@ def update_graphs(
     color_scale = px.colors.sample_colorscale(px.colors.cyclical.HSV, [i/len(trajectory_ids) for i in range(len(trajectory_ids))])
     
     trajectories_subset = Trajectories([traj for traj in trajectories.trajectories if traj.trajectory_id in trajectory_ids])
+    print(f'len(trajectories_subset.trajectories): {len(trajectories_subset.gdf)}')
     
     
     if relayoutData and 'xaxis.range[0]' in relayoutData.keys():
         print(relayoutData)
         if 'xaxis.range[0]' in relayoutData.keys():
-            start_datetime = datetime.fromisoformat(relayoutData['xaxis.range[0]'])
-            end_datetime = datetime.fromisoformat(relayoutData['xaxis.range[1]'])
-            x_range = [start_datetime, end_datetime]
-            trajectories_subset = trajectories.filter_trajectories(datetime_range=x_range)
+            start_datetime = pd.to_datetime(relayoutData['xaxis.range[0]'])
+            end_datetime = pd.to_datetime(relayoutData['xaxis.range[1]'])
+            datetime_range = [start_datetime, end_datetime]
+            print(f'len(trajectories_subset.trajectories): {len(trajectories_subset.gdf)}')
+            trajectories_subset.filter_trajectories(datetime_range=datetime_range)
+            print(f'len(trajectories_subset.trajectories): {len(trajectories_subset.gdf)}')
             
             map_fig = plot_map(
                 trajectories=trajectories_subset, 
@@ -95,7 +99,7 @@ def update_graphs(
         trajectories=trajectories_subset, 
         colors_list=color_scale,
     )
-    
+    print('---bottom---')   
     return map_fig, timeline_fig
 
     

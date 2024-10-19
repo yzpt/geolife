@@ -24,7 +24,7 @@ def plot_map(
 ):
     fig = go.Figure() 
     for i, trajectory in enumerate(trajectories.trajectories):
-        color = colors_list[i]
+        color = colors_list[i % len(colors_list)]
         fig.add_trace(go.Scattermapbox(
             lat=trajectory.gdf['latitude'],
             lon=trajectory.gdf['longitude'],

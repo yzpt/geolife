@@ -15,19 +15,19 @@ def plot_timeline(
 ) -> go.Figure:
     fig = go.Figure()
     for i, trajectory in enumerate(trajectories.trajectories):
-        color = colors_list[i]
         fig.add_trace(go.Scatter(
             x=trajectory.gdf['datetime'],
             y=trajectory.gdf[y_data],
             mode=mode,
             line=dict(
                 width=1,
-                color=color,
+                color=colors_list[i%len(colors_list)],
                 shape='spline',
             ),
             marker=dict(
                 size=3,
-                color=color),
+                color=colors_list[i%len(colors_list)],
+            ),
             name=f'Trajectory {i}',
             hoverinfo='text',
             showlegend=False,
