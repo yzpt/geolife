@@ -1,8 +1,10 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 import geopandas as gpd
 import pandas as pd
 import os
+from datetime import datetime
+
 
 from models.trajectory import Trajectory
 from utils.parsers import PltRecordParser
@@ -189,3 +191,13 @@ class Trajectories:
         """
         for trajectory in self.trajectories:
             trajectory.compute_geodataframe()
+            
+    def filter_trajectories(
+        self,
+        datetime_range: Tuple[datetime, datetime],
+    ) -> 'Trajectories':
+        """
+        Filter the trajectories by start_datetime and end_datetime
+        """
+        trajectories: Trajectory = [trajectory.filter_by_datetimerange(datetime_range) for trajectory in self.trajectories]
+        return Trajectories(trajectories)

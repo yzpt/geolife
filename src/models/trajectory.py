@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import geopandas as gpd
 from geopy.distance import geodesic
 
@@ -171,3 +171,12 @@ class Trajectory:
             # 'centroid': self.centroid,
         }
         
+    def filter_by_datetimerange(
+        self, 
+        datetime_range: Tuple[datetime, datetime]
+    ) -> 'Trajectory':
+        """
+        Filter the trajectory records by a specific time range
+        """
+        records = [record for record in self.records if datetime_range[0] <= record.datetime <= datetime_range[1]]
+        self.records = records
