@@ -4,8 +4,8 @@ import geopandas as gpd
 import pandas as pd
 import os
 
-from src.models.trajectory import Trajectory
-from src.utils.parsers import PltRecordParser
+from models.trajectory import Trajectory
+from utils.parsers import PltRecordParser
 
 @dataclass
 class Trajectories:

@@ -3,7 +3,7 @@ import pandas as pd
 from abc import ABC, abstractmethod
 from typing import List
 
-from src.models.record import Record
+from models.record import Record
 
 class RecordParser(ABC):
     @abstractmethod

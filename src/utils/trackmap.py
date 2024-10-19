@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import geopandas as gpd
 import os
 
-from src.models.trajectories import Trajectories
+from models.trajectories import Trajectories
 
 import random
 random_colors_list = [f'rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, 1)' for i in range(500)]
@@ -31,7 +31,7 @@ def plot_map(
             mode=mode,
             line=dict(
                 width=2,
-                color=color
+                color=color,
             ),
             marker=dict(
                 size=marker_size,

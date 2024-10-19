@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 from dash import html, dcc, dash_table
 import geopandas as gpd
 
-from src.models.trajectories import Trajectories
+from models.trajectories import Trajectories
 
 def create_layout(
     trajectories: Trajectories

@@ -4,8 +4,8 @@ from typing import Dict, List
 import geopandas as gpd
 from geopy.distance import geodesic
 
-from src.models.record import Record
-from src.utils.parsers import RecordParser
+from models.record import Record
+from utils.parsers import RecordParser
 
 
 @dataclass

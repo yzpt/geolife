@@ -1,6 +1,6 @@
 import plotly.graph_objs as go
 
-from src.models.trajectories import Trajectories
+from models.trajectories import Trajectories
 
 import random
 random_colors_list = [f'rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, 1)' for i in range(500)]
@@ -8,7 +8,7 @@ random_colors_list = [f'rgba({random.randint(0, 255)}, {random.randint(0, 255)},
 def plot_timeline(
     trajectories: Trajectories,
     y_data: str = 'speed',
-    mode: str = 'markers',
+    mode: str = 'markers+lines',
     height: int = 250,
     marker: dict = dict(color='red', size=5),
     colors_list: list = random_colors_list,
@@ -18,14 +18,15 @@ def plot_timeline(
         color = colors_list[i]
         fig.add_trace(go.Scatter(
             x=trajectory.gdf['datetime'],
-            y=trajectory.gdf['speed'],
+            y=trajectory.gdf[y_data],
             mode=mode,
             line=dict(
-                width=2,
-                color=color
+                width=1,
+                color=color,
+                shape='spline',
             ),
             marker=dict(
-                size=5,
+                size=3,
                 color=color),
             name=f'Trajectory {i}',
             hoverinfo='text',
@@ -34,7 +35,9 @@ def plot_timeline(
     fig.update_layout(
         template='plotly_dark',
         margin=dict(l=0, r=0, t=0, b=0),
-        yaxis=dict(range=[0, 200]),
+        yaxis=dict(
+            range=[0, max(50, trajectories.gdf[y_data].quantile(0.99) + 20)]
+            ),
         height=250,
     )
     return fig
