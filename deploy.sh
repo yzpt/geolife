@@ -18,7 +18,7 @@ echo "Building $CONTAINER_NAME"
 docker build -t $ARTIFACT_REGISTRY_LOCATION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO_NAME/$CONTAINER_NAME $APP_FOLDER
 
 # local docker run
-docker run -p $PORT:$PORT $ARTIFACT_REGISTRY_LOCATION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO_NAME/$CONTAINER_NAME
+# docker run -p $PORT:$PORT $ARTIFACT_REGISTRY_LOCATION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO_NAME/$CONTAINER_NAME
 
 # Create a repository on Artifact Registry
 # echo "Creating repository $ARTIFACT_REGISTRY_REPO_NAME"
@@ -28,10 +28,10 @@ docker run -p $PORT:$PORT $ARTIFACT_REGISTRY_LOCATION-docker.pkg.dev/$PROJECT_ID
 # gcloud auth configure-docker europe-west9-docker.pkg.dev
 
 # Push
-# echo "Pushing $CONTAINER_NAME"
-# docker push $ARTIFACT_REGISTRY_LOCATION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO_NAME/$CONTAINER_NAME
+echo "Pushing $CONTAINER_NAME"
+docker push $ARTIFACT_REGISTRY_LOCATION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO_NAME/$CONTAINER_NAME
 
 # Cloud Run 
 # --cpu 8 --memory 16Gi --execution-environment gen2
-# echo "Deploying $APP_SERVICE_NAME"
-# gcloud run deploy $APP_SERVICE_NAME --image $ARTIFACT_REGISTRY_LOCATION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO_NAME/$CONTAINER_NAME --platform managed --region $REGION --allow-unauthenticated --port $PORT --cpu 8 --memory 16Gi --execution-environment gen2
+echo "Deploying $APP_SERVICE_NAME"
+gcloud run deploy $APP_SERVICE_NAME --image $ARTIFACT_REGISTRY_LOCATION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO_NAME/$CONTAINER_NAME --platform managed --region $REGION --allow-unauthenticated --port $PORT --cpu 8 --memory 16Gi --execution-environment gen2
