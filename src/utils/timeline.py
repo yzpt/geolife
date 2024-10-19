@@ -21,12 +21,12 @@ def plot_timeline(
             mode=mode,
             line=dict(
                 width=1,
-                color=colors_list[i%len(colors_list)],
+                color=trajectory.color,
                 shape='spline',
             ),
             marker=dict(
                 size=3,
-                color=colors_list[i%len(colors_list)],
+                color=trajectory.color,
             ),
             name=f'Trajectory {i}',
             hoverinfo='text',

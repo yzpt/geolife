@@ -55,10 +55,12 @@ class Trajectory:
     user_id: str
     records: List[Record]
     gdf: gpd.GeoDataFrame = None
+    color: str = None
     
     def __post_init__(self):
         if self.gdf is None:
-            self.gdf = gpd.GeoDataFrame([record.__dict__ for record in self.records])
+            geometry = gpd.points_from_xy([record.longitude for record in self.records], [record.latitude for record in self.records])
+            self.gdf = gpd.GeoDataFrame([record.__dict__ for record in self.records], geometry=geometry)
     
     @property
     def count(self) -> int:
@@ -109,18 +111,17 @@ class Trajectory:
         )
         return trajectory
     
-    def compute_geodataframe(self):
+    def compute_speed(self):
         """
-        Compute the GeoDataFrame with the trajectory records, time differences, distance, and speed
+        Compute the speed with the trajectory records, time differences, distance, and speed
         """
         columns = ['user_id', 'trajectory_id', 'label', 'datetime', 'latitude', 'longitude', 'altitude', 'timestamp']
-        geometry = gpd.points_from_xy(self.gdf['longitude'], self.gdf['latitude'])
-        print(f'Computing GeoDataFrame for trajectory {self.trajectory_id} with {self.count} records')
+        print(f'Computing speed for trajectory {self.trajectory_id} with {self.count} records')
         self.gdf['time_diff'] = self._calculate_time_diffs(self.gdf)
         self.gdf['distance'] = self._calculate_distances(self.gdf)
         self.gdf['speed'] = self._calculate_speeds(self.gdf)
+        self.records = [Record(**record) for record in self.gdf[columns].to_dict(orient='records')]
 
-    
     def _calculate_time_diffs(self, gdf: gpd.GeoDataFrame) -> List[float]:
         """
         Calculate the time difference in seconds between consecutive records
@@ -171,14 +172,17 @@ class Trajectory:
             # 'centroid': self.centroid,
         }
         
-    def filter_by_datetimerange(
-        self, 
-        datetime_range: Tuple[datetime, datetime]
-    ) -> 'Trajectory':
+    def filter_by_datetimerange(self, datetime_range: Tuple[datetime, datetime]) -> 'Trajectory':
         """
-        Filter the trajectory records by a specific time range
+        Filter the trajectory records by a specific time range and retain existing time_diff, distance, and speed values.
         """
-        records = [record for record in self.records if datetime_range[0] <= record.datetime <= datetime_range[1]]
-        self.records = records
-        return self
-        
+        filtered_records = [record for record in self.records if datetime_range[0] <= record.datetime <= datetime_range[1]]
+        filtered_gdf = self.gdf[self.gdf['datetime'].between(datetime_range[0], datetime_range[1])]
+        filtered_trajectory = Trajectory(
+            user_id=self.user_id,
+            trajectory_id=self.trajectory_id,
+            records=filtered_records,
+            gdf=filtered_gdf,
+            color=self.color
+        )
+        return filtered_trajectory

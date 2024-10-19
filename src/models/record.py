@@ -9,5 +9,9 @@ class Record:
     longitude: float
     altitude: float
     datetime: datetime
-    timestamp: datetime
+    timestamp: float
     label: str = None
+    time_diff: float = None
+    distance: float = None
+    speed: float = None
+    

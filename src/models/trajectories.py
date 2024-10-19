@@ -183,21 +183,24 @@ class Trajectories:
             for record, row in zip(trajectory.records, trajectory_gdf.itertuples()):
                 record.label = row.label
     
-    def compute_trajectories_geodataframes(
+    def compute_trajectories_speed(
         self,
     ) -> None:
         """
         Compute the GeoDataFrame with the trajectory records, time differences, distance, and speed
         """
         for trajectory in self.trajectories:
-            trajectory.compute_geodataframe()
+            trajectory.compute_speed()
             
-    def filter_trajectories(
-        self,
-        datetime_range: Tuple[datetime, datetime],
-    ) -> 'Trajectories':
+    def filter_trajectories(self, datetime_range: Tuple[datetime, datetime]) -> 'Trajectories':
         """
-        Filter the trajectories by start_datetime and end_datetime
+        Filter the trajectories by start_datetime and end_datetime without recomputing speed.
         """
-        self.trajectories = [trajectory.filter_by_datetimerange(datetime_range) for trajectory in self.trajectories]
-        return self
+        filtered_trajectories = Trajectories(
+            [
+                trajectory.filter_by_datetimerange(datetime_range)
+                for trajectory in self.trajectories
+                if trajectory.filter_by_datetimerange(datetime_range).gdf.shape[0] > 0
+            ]
+        )
+        return filtered_trajectories

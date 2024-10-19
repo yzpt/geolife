@@ -22,7 +22,7 @@ def plot_map(
     marker_size: int = 10,
     height: int = 400,
 ):
-    fig = go.Figure() 
+    fig = go.Figure()
     for i, trajectory in enumerate(trajectories.trajectories):
         color = colors_list[i % len(colors_list)]
         fig.add_trace(go.Scattermapbox(
@@ -31,11 +31,12 @@ def plot_map(
             mode=mode,
             line=dict(
                 width=2,
-                color=color,
+                color=trajectory.color,
             ),
             marker=dict(
                 size=marker_size,
-                color=color),
+                color=trajectory.color,
+            ),
             name=f'Trajectory {i}',
             hoverinfo='text',
             showlegend=False,

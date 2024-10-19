@@ -22,7 +22,7 @@ def create_layout(
                             value=trajectories.user_ids_list[0],
                         ),
                         dcc.Dropdown(
-                            id='trajectory-dropdown',
+                            id='trajectories-dropdown',
                             options=trajectories.trajectory_ids_list,
                             value=trajectories.trajectory_ids_list[0],
                             multi=True,
